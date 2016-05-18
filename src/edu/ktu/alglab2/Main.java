@@ -1,25 +1,26 @@
 package edu.ktu.alglab2;
 
 import java.io.*;
+import java.util.Random;
 import java.util.Scanner;
 
 import static java.lang.Math.max;
 
 public class Main {
 
+    public static final int YEARS = 10;
+
     public double[][] R;
     private final double f1;
     private final double f2;
-    private final int years;
-    private final int investments;
+    private final int n;
     private final double startingMoney;
 
-    public Main(int years, int investments, double startingMoney, double f1, double f2) {
-        R = new double[years][investments];
+    public Main(int n, double startingMoney, double f1, double f2) {
+        R = new double[YEARS][n];
         this.f1 = f1;
         this.f2 = f2;
-        this.years = years;
-        this.investments = investments;
+        this.n = n;
         this.startingMoney = startingMoney;
     }
 
@@ -29,34 +30,44 @@ public class Main {
         double starting = scanner.nextDouble();
         double f1 = scanner.nextDouble();
         double f2 = scanner.nextDouble();
-        int j = scanner.nextInt();
         int i = scanner.nextInt();
-        Main main = new Main(j, i, starting, f1, f2);
+        System.out.println(i);
+        Main main = new Main(i, starting, f1, f2);
+        Random random = new Random();
         for(int ii = 0; ii < i; ii++){
-            for(int jj = 0; jj < j; jj++){
-                main.R[jj][ii] = scanner.nextDouble();
+            for(int jj = 0; jj < YEARS; jj++){
+                main.R[jj][ii] = (random.nextDouble() / 3.0) + 1.0;
             }
         }
-        System.out.printf("%.2f\n", main.getBiggestsProfits());
+        long start = System.nanoTime();
+        double biggestsProfits = main.getBiggestsProfits();
+        long end = System.nanoTime();
+        System.out.printf("%.2f\n", biggestsProfits);
+        System.out.println((end - start) / 1000000.0 + "ms" );
 
     }
 
     public double getBiggestsProfits(){
-        double max = 0;
-        for (int k = 0; k < investments; k++) {
-            max = max(getBiggestsProfits(getNextYearMoney(startingMoney, 0, k, k, false), 0, k), max);
-        }
-        return max;
-    }
-
-    private double getBiggestsProfits(double money, int j, int i){
-        System.out.println(j + ","+ i+","+ money+",");
-        if(j >= years - 1){
-            return money;
-        }
-        double max = 0;
-        for (int k = 0; k < investments; k++) {
-            max = max(getBiggestsProfits(getNextYearMoney(money, j + 1, i, k, true), j + 1, k), max);
+        double max = startingMoney;
+        int current = 0;
+        for (int j = 0; j < YEARS; j++) {
+            double saved = max;
+            double temp;
+            for (int i = 0; i < n; i++) {
+                if(j == 0){
+                    temp = getNextYearMoney(saved, j, i, i, false);
+                    if ( temp > max){
+                        max = temp;
+                        current = i;
+                    }
+                } else {
+                    temp = getNextYearMoney(saved, j, current, i, true);
+                    if ( temp > max){
+                        max = temp;
+                        current = i;
+                    }
+                }
+            }
         }
         return max;
     }
